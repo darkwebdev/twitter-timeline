@@ -4,7 +4,7 @@ module.exports = React.createClass({
     render: function() {
         return (
             <article className="tweet">
-                <p>{ tweet.text }</p>
+                <p>{ this.props.data.text }</p>
             </article>
         );
     }

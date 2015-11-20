@@ -1,4 +1,5 @@
 var React = require('react');
+var Tweet = require('./Tweet');
 
 module.exports = React.createClass({
     render: function() {
@@ -7,7 +8,7 @@ module.exports = React.createClass({
                 {
                     this.props.list.map(function(tweet) {
                         return (
-                            <TweetItem data={ tweet } />
+                            <Tweet data={ tweet } />
                         );
                     })
                 }
