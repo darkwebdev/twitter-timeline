@@ -1,0 +1,5 @@
+--require chai
+--ui bdd
+--check-leaks
+--reporter nyan
+--recursive
