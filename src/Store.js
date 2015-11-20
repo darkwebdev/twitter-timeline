@@ -5,7 +5,8 @@ const disp = require('./dispatcher');
 
 const buildUrl = function(filter) {
     const filterStr = (filter.text ? 'q=' + filter.text : '') +
-        (filter.geocode ? '&geocode=' + filter.geocode : '');
+        (filter.geocode ? '&geocode=' + filter.geocode : '') +
+        (filter.lang ? '&lang=' + filter.lang : '');
 
     return 'url' + (filterStr ? '?' + filterStr : '');
 };
@@ -16,8 +17,8 @@ const buildTimeline = function(q) {
 
 var Store = function(queriesData) {
     var queries = queriesData || [];
+    var filters = [];
     var timeline = [];
-    var state = {};
 
     var store = _.extend({}, EventEmitter.prototype, {
         emitChange: function () {
@@ -54,8 +55,8 @@ var Store = function(queriesData) {
             return timeline;
         },
 
-        getState: function () {
-            return state;
+        getFilters: function () {
+            return filters;
         },
 
         updateTimeline: function() {
@@ -70,10 +71,12 @@ var Store = function(queriesData) {
     disp.register(function (action) {
         switch (action.type) {
             case 'filterChanged':
-                store.fetch(action.index, {
+                filters[action.index] = {
                     text: action.text,
-                    geocode: action.geocode
-                });
+                    geocode: action.geocode,
+                    lang: action.lang
+                };
+                store.fetch(action.index, filters[action.index]);
                 break;
         }
     });

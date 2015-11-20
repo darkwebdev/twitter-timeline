@@ -3,3 +3,4 @@
 --check-leaks
 --reporter nyan
 --recursive
+--compilers js:babel-core/register
