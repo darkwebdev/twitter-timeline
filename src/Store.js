@@ -1,14 +1,16 @@
 const _ = require('lodash');
-const req = require('axios');
+const req = require('reqwest');
 const EventEmitter = require('events').EventEmitter;
 const disp = require('./dispatcher');
 
 const buildUrl = function(filter) {
+    //const url= 'http://demo.suitepad.systems/1.1/search/tweets.json';
+    const url= './test/tweets.json';
     const filterStr = (filter.text ? 'q=' + filter.text : '') +
         (filter.geocode ? '&geocode=' + filter.geocode : '') +
         (filter.lang ? '&lang=' + filter.lang : '');
 
-    return 'url' + (filterStr ? '?' + filterStr : '');
+    return url + (filterStr ? '?' + filterStr : '');
 };
 
 const buildTimeline = function(q) {
@@ -18,7 +20,6 @@ const buildTimeline = function(q) {
 var Store = function(queriesData) {
     var queries = queriesData || [];
     var filters = [];
-    var timeline = [];
 
     var store = _.extend({}, EventEmitter.prototype, {
         emitChange: function () {
@@ -35,7 +36,12 @@ var Store = function(queriesData) {
 
         ajax: req,
         fetch: function (index, filter) {
-            store.ajax(buildUrl(filter)).then(function (data) {
+            const ajaxOptions = {
+                url: buildUrl(filter),
+                withCredentials: true
+            };
+
+            store.ajax(ajaxOptions).then(function (data) {
                 queries[index] = data.statuses;
                 console.log('fetch queries', queries.length);
                 store.emitChange();
@@ -51,31 +57,27 @@ var Store = function(queriesData) {
             return this;
         },
 
-        getTimeline: function () {
-            return timeline;
+        getState: function () {
+            return {
+                timeline: buildTimeline(queries),
+                filters: filters
+            };
         },
 
-        getFilters: function () {
-            return filters;
-        },
-
-        updateTimeline: function() {
-            timeline = buildTimeline(queries);
+        close: function() {
+            disp.unregister(dispToken);
         }
     });
 
-    store.addChangeListener(store.updateTimeline);
-
     if (queries.length) store.emitChange();
 
-    disp.register(function (action) {
+    var dispToken = disp.register(function (action) {
         switch (action.type) {
-            case 'filterChanged':
-                filters[action.index] = {
-                    text: action.text,
-                    geocode: action.geocode,
-                    lang: action.lang
-                };
+            case 'update':
+                console.log('dispatcher update', queries.length);
+                if (action.filter) {
+                    filters[action.index] = action.filter;
+                }
                 store.fetch(action.index, filters[action.index]);
                 break;
         }

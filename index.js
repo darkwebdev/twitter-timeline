@@ -7,15 +7,9 @@ const ViewCtrl = require('./src/ViewCtrl');
 (function(document) {
 
     const tweets = [
-        {
-            text: 'tweet text'
-        },
-        {
-            text: 'another tweet'
-        },
-        {
-            text: 'third one'
-        }
+        require('./test/search-suitepad').statuses,
+        require('./test/search-javascript').statuses,
+        require('./test/search-ios-sydney').statuses
     ];
 
     ReactDOM.render(
