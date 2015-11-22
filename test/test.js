@@ -67,7 +67,7 @@ describe('App', function() {
             });
         });
 
-        it('should show Twit Timeline', function() {
+        it('should show Tweets Timeline', function() {
             const timeline = getSubComp(viewCtrl, timelinePos);
 
             expect(timeline.props.list).to.deep.equal(store.getState().timeline);
@@ -78,55 +78,59 @@ describe('App', function() {
 
             expect(filters[0].props.settings).to.deep.equal(store.getState().filters[0]);
         });
-        it('should show Filters with Geocode Search input');
-        it('should show Filters with Language selector');
         it('should load Filters settings from Local storage')
     });
 
     describe('on Filter change', function() {
-        [
-            {
-                name: 'text',
-                handler: 'onTextChange',
-                value: 'changed text'
-            },
-            {
-                name: 'geocode',
-                handler: 'onGeocodeChange',
-                value: [22.22, 33.33, '1km']
-            },
-            {
-                name: 'lang',
-                handler: 'onLangChange',
-                value: 'fr'
-            }
-        ].map(function(filter) {
 
-            it('should call onChange with changed Filter "' + filter.name + '" in ViewCtrl', function(done) {
-                const filtersProps = {
-                    index: 0,
-                    settings: defaultFilters,
-                    onChange: sinon.spy()
-                };
-                filters = React.createElement(Filters, filtersProps);
-                instance = getInstance(filters);
+        _.range(3).map(function(queryIndex) {
+            [
+                {
+                    name: 'text',
+                    handler: 'onTextChange',
+                    value: 'changed text'
+                },
+                {
+                    name: 'geocode',
+                    handler: 'onGeocodeChange',
+                    value: [22.22, 33.33, '1km']
+                },
+                {
+                    name: 'lang',
+                    handler: 'onLangChange',
+                    value: 'fr'
+                }
+            ].map(function(filter) {
 
-                instance[filter.handler]({ target: { value: filter.value } });
-                var filterChanges = {};
-                filterChanges[filter.name] = filter.value;
-                var expectedFilters = _.extend(defaultFilters, filterChanges);
+                it('should call onChange with changed Filter #' + queryIndex
+                    + ' [' + filter.name + '] in ViewCtrl', function(done) {
 
-                setTimeout(function() {
-                    expect(filtersProps.onChange).to.be.calledWith(0, expectedFilters);
-                    done();
-                }, 300);
+                    const filtersProps = {
+                        index: queryIndex,
+                        settings: defaultFilters,
+                        onChange: sinon.spy()
+                    };
+                    filters = React.createElement(Filters, filtersProps);
+                    instance = getInstance(filters);
+
+                    instance[filter.handler]({ target: { value: filter.value } });
+                    var filterChanges = {};
+                    filterChanges[filter.name] = filter.value;
+                    var expectedFilters = _.extend(defaultFilters, filterChanges);
+
+                    setTimeout(function() {
+                        expect(filtersProps.onChange).to.be.calledWith(queryIndex, expectedFilters);
+                        done();
+                    }, 300);
+                });
+
             });
 
         });
 
         it('should send Update action to the Store', function() {
             const filtersComp = getSubComp(viewCtrl, filtersPos);
-            const queryIndex = 1;
+            const queryIndex = 0;
             const expectedAction = {
                 type: 'update',
                 filters: defaultFilters,
@@ -135,7 +139,7 @@ describe('App', function() {
 
             sinon.spy(disp, 'dispatch');
 
-            filtersComp[0].props.onChange(queryIndex, defaultFilters);
+            filtersComp[queryIndex].props.onChange(queryIndex, defaultFilters);
 
             expect(disp.dispatch).to.be.calledWith(expectedAction);
         });
@@ -198,6 +202,7 @@ describe('App', function() {
             expect(state.timeline.length).to.equal(0);
 
             store.addChangeListener(function() {
+                console.log(store.getState());
                 expect(store.getState().timeline.length).not.to.equal(0);
 
                 _.each(store.getState().timeline, function(tweet) {
@@ -207,7 +212,7 @@ describe('App', function() {
                 done();
             });
 
-            store.fetch(queryIndex, {});
+            store.updateQuery(queryIndex);
         });
 
         it('should redraw the View with updated Timeline', function(done) {
@@ -221,7 +226,7 @@ describe('App', function() {
                 done();
             });
 
-            store.fetch(queryIndex, {});
+            store.updateQuery(queryIndex);
         });
 
     });
