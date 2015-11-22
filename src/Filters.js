@@ -1,3 +1,4 @@
+const _ = require('lodash');
 var React = require('react');
 
 module.exports = React.createClass({
@@ -16,9 +17,9 @@ module.exports = React.createClass({
         this.setState({ lang: event.target.value });
         this.onChange();
     },
-    onChange: function () {
+    onChange: _.debounce(function () {
         this.props.onChange(this.props.index, this.state);
-    },
+    }, 300),
     render: function() {
         return (
             <div className="filters">

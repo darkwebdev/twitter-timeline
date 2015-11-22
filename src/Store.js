@@ -4,8 +4,8 @@ const EventEmitter = require('events').EventEmitter;
 const disp = require('./dispatcher');
 
 const buildUrl = function(filter) {
-    //const url= 'http://demo.suitepad.systems/1.1/search/tweets.json';
-    const url= './test/tweets.json';
+    const url= 'http://demo.suitepad.systems/1.1/search/tweets.json';
+    //const url= './test/tweets.json';
     const filterStr = (filter.text ? 'q=' + filter.text : '') +
         (filter.geocode ? '&geocode=' + filter.geocode : '') +
         (filter.lang ? '&lang=' + filter.lang : '');
@@ -42,20 +42,13 @@ var Store = function(queriesData) {
         fetch: function (index, filter) {
             const ajaxOptions = {
                 url: buildUrl(filter),
-                withCredentials: true
+                type: 'jsonp'
             };
 
             store.ajax(ajaxOptions).then(function (data) {
                 queries[index] = data.statuses;
-                console.log('fetch queries', queries.length);
+                console.log('fetch queries', queries.length, filters[index]);
                 store.emitChange();
-            });
-
-            return this;
-        },
-        fetchAll: function (filters) {
-            _.each(queries, function (q, i) {
-                this.fetch(i, filters.length ? filters[i] : {});
             });
 
             return this;

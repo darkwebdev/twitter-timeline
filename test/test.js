@@ -102,7 +102,7 @@ describe('App', function() {
             }
         ].map(function(filter) {
 
-            it('should call onChange with changed Filter "' + filter.name + '" in ViewCtrl', function() {
+            it('should call onChange with changed Filter "' + filter.name + '" in ViewCtrl', function(done) {
                 const filtersProps = {
                     index: 0,
                     settings: defaultFilters,
@@ -116,7 +116,10 @@ describe('App', function() {
                 filterChanges[filter.name] = filter.value;
                 var expectedFilters = _.extend(defaultFilters, filterChanges);
 
-                expect(filtersProps.onChange).to.be.calledWith(0, expectedFilters);
+                setTimeout(function() {
+                    expect(filtersProps.onChange).to.be.calledWith(0, expectedFilters);
+                    done();
+                }, 300);
             });
 
         });
@@ -162,11 +165,11 @@ describe('App', function() {
                 index: 0
             });
 
-            //const url = 'http://demo.suitepad.systems/1.1/search/tweets.json';
-            const url = './test/tweets.json';
+            const url = 'http://demo.suitepad.systems/1.1/search/tweets.json';
+            //const url = './test/tweets.json';
             const expectedOptions = {
                 url: url + '?q=' + textFilter + '&geocode=' + geocodeFilterSydney + '&lang=' + langFilter,
-                withCredentials: true
+                type: 'jsonp'
             };
 
             expect(store.ajax).to.be.calledWith(expectedOptions);
