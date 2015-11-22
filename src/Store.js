@@ -3,6 +3,12 @@ const req = require('reqwest');
 const EventEmitter = require('events').EventEmitter;
 const disp = require('./dispatcher');
 
+const defaultFilters = [ {
+    text: 'ios',
+    geocode: [-33.86, 151.211, '1000km'],
+    lang: 'en'
+}, {}, {} ];
+
 const buildUrl = function(filter) {
     const url= 'http://demo.suitepad.systems/1.1/search/tweets.json';
     //const url= './test/tweets.json';
@@ -21,15 +27,14 @@ const buildTimeline = function(q) {
         .value();
 };
 
-var Store = function(queriesData) {
-    var queries = queriesData || [];
-    var filters = [ {
-        text: 'ios',
-        geocode: [-33.86, 151.211, '1000km'],
-        lang: 'en'
-    }, {}, {} ];
+const Store = function(options) {
+    options = options || {};
+    const storage = options.storage ||
+        (typeof window === 'undefined' ? {} : window.localStorage);
+    var queries = options.collection || [];
+    var filters = [];
 
-    var store = _.extend({}, EventEmitter.prototype, {
+    const store = _.extend({}, EventEmitter.prototype, {
         emitChange: function () {
             this.emit('change');
         },
@@ -42,29 +47,38 @@ var Store = function(queriesData) {
         },
 
         ajax: req,
+        ajaxType: 'jsonp',
         fetch: function (filter) {
             const ajaxOptions = {
                 url: buildUrl(filter),
-                type: 'jsonp'
+                type: this.ajaxType
             };
 
             return store.ajax(ajaxOptions);
         },
         updateQuery: function(index, filter) {
-            if (!filter || filter.text) {
+            if ( (!filter && filters[index]) || filter.text ) {
                 this.fetch(filter || filters[index]).then(function (data) {
                     queries[index] = data.statuses;
                     store.emitChange();
                 }, function(err) {
-                    console.error('Error fetching tweets', err);
+                    console.error('Error fetching tweets', err); //eslint-disable-line no-console
                 });
             } else {
                 queries[index] = [];
                 store.emitChange();
             }
         },
+        getStorage: _.constant(storage),
         updateFilter: function(index, settings) {
             filters[index] = settings;
+            this.saveFilters();
+        },
+        saveFilters: function() {
+            storage.setItem('filters', JSON.stringify(filters));
+        },
+        loadFilters: function() {
+            filters = JSON.parse(storage.getItem('filters')) || defaultFilters;
         },
 
         getState: function () {
@@ -79,17 +93,19 @@ var Store = function(queriesData) {
         }
     });
 
+    store.loadFilters();
     if (queries.length) store.emitChange();
 
-    var dispToken = disp.register(function (action) {
-        switch (action.type) {
-            case 'update':
-                if (action.filters) {
-                    store.updateFilter(action.index, action.filters);
-                }
-                store.updateQuery(action.index, filters[action.index]);
-                break;
+    const actionMap = {
+        update: function(action) {
+            if (action.filters) {
+                store.updateFilter(action.index, action.filters);
+            }
+            store.updateQuery(action.index, filters[action.index]);
         }
+    };
+    const dispToken = disp.register(function (action) {
+        actionMap[action.type](action);
     });
 
     return store;

@@ -23,6 +23,12 @@ const defaultFilters = {
     geocode: [1, 2, '100km'],
     lang: 'en'
 };
+const createFakeStorage = function() {
+    return {
+        getItem: _.constant(JSON.stringify([defaultFilters, {}, {}])),
+        setItem: sinon.spy()
+    };
+};
 
 var store;
 var state;
@@ -54,7 +60,11 @@ describe('App', function() {
 
     describe('on start', function() {
         beforeEach(function() {
-            store = Store(_.values(fakeSearchResults));
+            const storeOptions = {
+                collection: _.values(fakeSearchResults),
+                storage: createFakeStorage()
+            };
+            store = Store(storeOptions);
             viewCtrl = React.createElement(ViewCtrl, { store: store });
         });
         afterEach(function() {
@@ -78,10 +88,40 @@ describe('App', function() {
 
             expect(filters[0].props.settings).to.deep.equal(store.getState().filters[0]);
         });
-        it('should load Filters settings from Local storage')
+
+        it('should load Filters settings from Local storage', function() {
+            store.updateFilter(0, {});
+            expect(store.getState().filters[0]).to.deep.equal({});
+
+            store.loadFilters();
+            expect(store.getState().filters[0]).to.deep.equal(defaultFilters);
+        });
     });
 
     describe('on Filter change', function() {
+        beforeEach(function() {
+            const storeOptions = {
+                collection: _.values(fakeSearchResults),
+                storage: createFakeStorage()
+            };
+            store = Store(storeOptions);
+            store.ajaxType = 'json';
+
+            viewCtrl = React.createElement(ViewCtrl, { store: store });
+        });
+        afterEach(function() {
+            store.close();
+        });
+        it('should save Filters settings to Local storage', function() {
+            const filters = { text: 'some text' };
+            const expectedFilters = JSON.stringify([ filters, {}, {} ]);
+
+            store.updateFilter(0, filters);
+            expect(store.getState().filters[0]).to.deep.equal(filters);
+
+            store.saveFilters();
+            expect(store.getStorage().setItem).to.be.calledWith('filters', expectedFilters);
+        });
 
         _.range(3).map(function(queryIndex) {
             [
@@ -151,7 +191,7 @@ describe('App', function() {
         const geocodeFilterSydney = [-33.86, 151.211, '1000km'];
 
         beforeEach(function () {
-            store = Store();
+            store = Store({ storage: createFakeStorage() });
             sinon.stub(store, 'ajax').returns(Promise.resolve());
         });
         afterEach(function () {
@@ -190,7 +230,7 @@ describe('App', function() {
         };
 
         beforeEach(function() {
-            store = Store();
+            store = Store({ storage: createFakeStorage() });
             state = store.getState();
             sinon.stub(store, 'ajax').returns(Promise.resolve(fakeSearchResults['iosSydney']));
         });
@@ -202,7 +242,6 @@ describe('App', function() {
             expect(state.timeline.length).to.equal(0);
 
             store.addChangeListener(function() {
-                console.log(store.getState());
                 expect(store.getState().timeline.length).not.to.equal(0);
 
                 _.each(store.getState().timeline, function(tweet) {

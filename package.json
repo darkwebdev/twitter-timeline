@@ -1,22 +1,27 @@
 {
-  "name": "suitpad",
+  "name": "twitter-timeline-flux",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "build": "./node_modules/.bin/browserify -t babelify index.js -o index.min.js"
+    "lint": "./node_modules/.bin/eslint src test",
+    "build": "./node_modules/.bin/browserify -t babelify index.js -o index.min.js",
+    "watch": "./node_modules/.bin/watchify -t babelify index.js -o index.min.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.7.0",
     "babel-core": "^6.2.1",
     "babel-plugin-transform-react-jsx": "^6.2.0",
+    "babelify": "^7.2.0",
+    "browserify": "^12.0.1",
     "events": "^1.1.0",
     "flux": "^2.1.1",
     "lodash": "^3.10.1",
-    "react": "^0.14.2"
+    "react": "^0.14.3",
+    "reqwest": "^2.0.5",
+    "xhr2": "^0.1.3"
   },
   "devDependencies": {
     "babel-eslint": "^4.1.5",
@@ -26,6 +31,7 @@
     "mocha": "^2.3.4",
     "react-addons-test-utils": "^0.14.2",
     "sinon": "^1.17.2",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "watchify": "^3.6.1"
   }
 }
