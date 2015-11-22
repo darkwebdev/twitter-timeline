@@ -1,6 +1,9 @@
 # twitter-timeline-flux
 Simple twitter timeline from multiple filtered queries
 
+# preview
+http://darkwebdev.github.io/twitter-timeline-flux/
+
 # install
 `
 npm i
