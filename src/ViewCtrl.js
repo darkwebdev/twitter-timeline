@@ -4,7 +4,7 @@ const React = require('react');
 const Timeline = require('./Timeline');
 const Filters = require('./Filters');
 const disp = require('./dispatcher');
-const filtersAmount = 1;
+const filtersAmount = 3;
 
 module.exports = React.createClass({
     getState: function() {
@@ -21,7 +21,6 @@ module.exports = React.createClass({
         this.setState(this.getState());
     },
     update: function(index, filters) {
-        console.log('view update');
         disp.dispatch({
             type: 'update',
             filters: filters,
@@ -30,7 +29,7 @@ module.exports = React.createClass({
     },
     updateAll: function() {
         _.range(filtersAmount).map(_.bind(function(index) {
-            this.update(index, this.state.filters[index]);
+            this.update(index);
         }, this));
     },
     render: function () {
