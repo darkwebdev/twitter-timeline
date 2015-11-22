@@ -1,7 +1,10 @@
+const _ = require('lodash');
 const React = require('react');
+
 const Timeline = require('./Timeline');
 const Filters = require('./Filters');
 const disp = require('./dispatcher');
+const filtersAmount = 1;
 
 module.exports = React.createClass({
     getState: function() {
@@ -12,27 +15,38 @@ module.exports = React.createClass({
     },
     componentDidMount: function() {
         this.props.store.addChangeListener(this.onChange);
-        this.update();
+        this.updateAll();
     },
     onChange: function() {
         this.setState(this.getState());
     },
-    update: function() {
+    update: function(index, filters) {
         console.log('view update');
         disp.dispatch({
             type: 'update',
-            filter: {
-                text: 'react flux',
-                geocode: null,
-                lang: 'en'
-            },
-            index: 0
+            filters: filters,
+            index: index
         });
+    },
+    updateAll: function() {
+        _.range(filtersAmount).map(_.bind(function(index) {
+            this.update(index, this.state.filters[index]);
+        }, this));
     },
     render: function () {
         return (
             <div>
-                <Filters settings={ this.state.filters } />
+                {
+                    _.range(filtersAmount).map(_.bind(function(index) {
+                        return (
+                            <Filters
+                                index={ index }
+                                settings={ this.state.filters[index] }
+                                onChange={ this.update }
+                            />
+                        );
+                    }, this))
+                }
                 <Timeline list={ this.state.timeline } />
             </div>
         );

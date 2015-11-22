@@ -19,7 +19,11 @@ const buildTimeline = function(q) {
 
 var Store = function(queriesData) {
     var queries = queriesData || [];
-    var filters = [];
+    var filters = [ {
+        text: 'ios',
+        geocode: [-33.86, 151.211, '1000km'],
+        lang: 'en'
+    }, {}, {} ];
 
     var store = _.extend({}, EventEmitter.prototype, {
         emitChange: function () {
@@ -75,8 +79,8 @@ var Store = function(queriesData) {
         switch (action.type) {
             case 'update':
                 console.log('dispatcher update', queries.length);
-                if (action.filter) {
-                    filters[action.index] = action.filter;
+                if (action.filters) {
+                    filters[action.index] = action.filters;
                 }
                 store.fetch(action.index, filters[action.index]);
                 break;
