@@ -14,7 +14,11 @@ const buildUrl = function(filter) {
 };
 
 const buildTimeline = function(q) {
-    return _.compact(_.flatten(q));
+    return _.chain(q)
+        .flatten()
+        .compact()
+        .sortByOrder(function(tweet) { return new Date(tweet.created_at); }, ['desc'])
+        .value();
 };
 
 var Store = function(queriesData) {
@@ -27,7 +31,6 @@ var Store = function(queriesData) {
 
     var store = _.extend({}, EventEmitter.prototype, {
         emitChange: function () {
-            console.log('emit change');
             this.emit('change');
         },
 
@@ -39,19 +42,29 @@ var Store = function(queriesData) {
         },
 
         ajax: req,
-        fetch: function (index, filter) {
+        fetch: function (filter) {
             const ajaxOptions = {
                 url: buildUrl(filter),
                 type: 'jsonp'
             };
 
-            store.ajax(ajaxOptions).then(function (data) {
-                queries[index] = data.statuses;
-                console.log('fetch queries', queries.length, filters[index]);
+            return store.ajax(ajaxOptions);
+        },
+        updateQuery: function(index, filter) {
+            if (!filter || filter.text) {
+                this.fetch(filter || filters[index]).then(function (data) {
+                    queries[index] = data.statuses;
+                    store.emitChange();
+                }, function(err) {
+                    console.error('Error fetching tweets', err);
+                });
+            } else {
+                queries[index] = [];
                 store.emitChange();
-            });
-
-            return this;
+            }
+        },
+        updateFilter: function(index, settings) {
+            filters[index] = settings;
         },
 
         getState: function () {
@@ -71,11 +84,10 @@ var Store = function(queriesData) {
     var dispToken = disp.register(function (action) {
         switch (action.type) {
             case 'update':
-                console.log('dispatcher update', queries.length);
                 if (action.filters) {
-                    filters[action.index] = action.filters;
+                    store.updateFilter(action.index, action.filters);
                 }
-                store.fetch(action.index, filters[action.index]);
+                store.updateQuery(action.index, filters[action.index]);
                 break;
         }
     });
