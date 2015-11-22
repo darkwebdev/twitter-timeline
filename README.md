@@ -5,13 +5,20 @@ Simple twitter timeline from multiple filtered queries
 http://darkwebdev.github.io/twitter-timeline-flux/
 
 # install
-`
+```
 npm i
-`
-
+npm build
+```
 Maybe you should install babelify globally, but I hope you don't need to.
 
+# develop
+```
+npm watch
+```
+This will start watchify.
+
 # test
-`
+```
 npm test
-`
+```
+This will start linter and test-runner.
