@@ -7,13 +7,13 @@ http://darkwebdev.github.io/twitter-timeline-flux/
 # install
 ```
 npm i
-npm build
+npm run build
 ```
 Maybe you should install babelify globally, but I hope you don't need to.
 
 # develop
 ```
-npm watch
+npm run watch
 ```
 This will start watchify.
 
