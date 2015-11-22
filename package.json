@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "npm run lint && ./node_modules/.bin/mocha",
     "lint": "./node_modules/.bin/eslint src test",
     "build": "./node_modules/.bin/browserify -t babelify index.js -o index.min.js",
     "watch": "./node_modules/.bin/watchify -t babelify index.js -o index.min.js"
