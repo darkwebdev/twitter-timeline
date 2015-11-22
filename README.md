@@ -9,7 +9,6 @@ http://darkwebdev.github.io/twitter-timeline-flux/
 npm i
 npm run build
 ```
-Maybe you should install babelify globally, but I hope you don't need to.
 
 # develop
 ```
